@@ -215,7 +215,7 @@ When completely resetting a switch, both the startup configuration and existing 
 
 ---
 
-## 8. Incorrect DNS Setting in DHCP Configuration
+## 7. Incorrect DNS Setting in DHCP Configuration
 
 ### Problem
 
@@ -243,7 +243,7 @@ When a client has an IP address and gateway but cannot resolve names, DNS config
 
 ---
 
-## 9. ACL Affecting ICMP / Connectivity Testing
+## 8. ACL Affecting ICMP / Connectivity Testing
 
 ### Problem
 
