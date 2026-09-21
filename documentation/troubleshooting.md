@@ -186,45 +186,56 @@ When completely resetting a switch, both the startup configuration and existing 
 
 # Network Configuration Troubleshooting
 
-## 7. LACP EtherChannel Configuration Mismatch
+## 7. LACP EtherChannel – Faulty Cable Termination
 
 ### Problem
 
-While configuring the four-link LACP EtherChannel between SW1 and SW2, the physical interfaces did not initially bundle as expected.
+While configuring the four-link LACP EtherChannel between SW1 and SW2, one of the physical links was not operating correctly.
+
+The EtherChannel uses four physical Gigabit Ethernet connections between the two switches.
 
 ### Investigation
 
-I compared the configuration of the EtherChannel member interfaces and the Port-Channel.
+Because the EtherChannel configuration was otherwise functioning, I investigated the physical links participating in the bundle.
 
-EtherChannel member interfaces must have compatible Layer 2 settings for the bundle to operate correctly.
+I checked the individual interfaces and inspected the Ethernet cabling.
 
-I checked items such as:
-
-- LACP configuration
-- Trunk mode
-- Native VLAN
-- Allowed VLANs
-- Member interface configuration
+One of the Ethernet cables had been incorrectly terminated. A conductor inside the RJ45 connector was not properly seated, preventing that physical link from operating correctly.
 
 ### Root Cause
 
-A configuration mismatch existed between interfaces participating in the EtherChannel.
+The problem was not an LACP or switch configuration mismatch.
+
+The root cause was a faulty RJ45 cable termination on one of the physical links participating in the EtherChannel.
 
 ### Resolution
 
-I corrected the inconsistent configuration so the member interfaces matched.
+I corrected the Ethernet cable termination and reconnected the link.
 
 I then verified the EtherChannel using:
 
 `show etherchannel summary`
 
-The final configuration showed `Po1(SU)` with the member interfaces in the `(P)` bundled state.
+After correcting the cable, the EtherChannel showed:
+
+- `Po1(SU)` – Port-channel operating as a Layer 2 EtherChannel and in use
+- All four member interfaces in `(P)` state – successfully bundled in the Port-channel
 
 ### Lesson Learned
 
-EtherChannel depends on consistent configuration across all participating interfaces.
+Not every EtherChannel problem is caused by switch configuration.
 
-When an EtherChannel fails to form, comparing the configuration of each member interface is an important troubleshooting step.
+Because EtherChannel depends on multiple physical links, Layer 1 problems can affect the bundle even when the LACP and trunk configuration is correct.
+
+This reinforced the importance of troubleshooting from the physical layer upward:
+
+1. Check interface/link status.
+2. Inspect and test physical cabling.
+3. Verify speed and duplex.
+4. Verify EtherChannel membership.
+5. Only then investigate LACP or trunk configuration if necessary.
+
+It also demonstrated why commands such as `show etherchannel summary` and interface status commands are useful for identifying whether individual physical links are successfully participating in the bundle.
 
 ---
 
