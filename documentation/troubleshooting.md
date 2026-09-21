@@ -118,6 +118,7 @@ This reinforced a physical-first troubleshooting process:
 5. Verify EtherChannel membership.
 6. Investigate LACP or trunk configuration only if the physical layer is healthy.
 
+
 The incident demonstrated how a Layer 1 problem can directly affect a Layer 2 technology such as EtherChannel.
 ---
 
