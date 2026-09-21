@@ -2,7 +2,22 @@
 
 A hands-on physical Cisco networking lab designed to simulate a small enterprise network using routing, switching, redundancy, segmentation, network services, security, and troubleshooting.
 
-The goal of this project was to move beyond simulations and configure real Cisco routers and switches while practicing enterprise networking concepts including OSPF, HSRP, VLANs, LACP EtherChannel, DHCP, NAT/PAT, SSH, and Layer 2 security.
+The goal of this project is to move beyond simulations and gain hands-on experience configuring, testing, and troubleshooting physical Cisco infrastructure.
+
+## 🏗️ Network Topology
+
+![Cisco Enterprise Homelab Topology](Cisco-homelab-diagram.png)
+
+## 📚 Project Documentation
+
+- [Troubleshooting & Deployment Challenges](documentation/troubleshooting.md)
+- [Future Homelab Implementations](documentation/future-implementations.md)
+
+## 🔧 Core Technologies
+
+`Cisco IOS` `VLANs` `802.1Q` `OSPF` `HSRP` `LACP` `EtherChannel` `DHCP` `NAT/PAT` `ACLs` `SSH` `STP`
+
+---
 
 ## Physical Hardware
 
