@@ -257,8 +257,6 @@ Because the route existed but the traffic was still being blocked, I inspected t
 
 ### Root Cause
 
-### Root Cause
-
 A `deny ip any any` entry had accidentally been placed above the ACL entry intended to permit the traffic.
 
 Because Cisco ACLs are processed from top to bottom and stop at the first matching entry, the `deny ip any any` statement matched the ICMP traffic before the router could reach the permit statement.
