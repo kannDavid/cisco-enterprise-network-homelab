@@ -64,34 +64,61 @@ Cable conductor size (AWG), connector compatibility, conductor type, and termina
 
 ---
 
-## 3. Ethernet Link Negotiating at 100 Mbps
+## 3. EtherChannel Link Negotiating at 100 Mbps – Faulty RJ45 Termination
 
 ### Problem
 
-One Ethernet connection negotiated at 100 Mbps instead of the expected 1 Gbps.
+While building the four-link LACP EtherChannel between SW1 and SW2, I noticed that one of the physical links was negotiating at 100 Mbps instead of the expected 1 Gbps.
+
+Because the EtherChannel was designed using four Gigabit Ethernet links, I needed to determine whether the problem was caused by the switch configuration or the physical connection.
 
 ### Investigation
 
-Because the connection was operational but running below the expected speed, I investigated the physical layer rather than immediately changing switch configuration.
+I checked the affected interface and confirmed that the link was operational, but it was negotiating at only 100 Mbps.
 
-I inspected the Ethernet termination and discovered that one conductor was not properly seated in the RJ45 connector.
+Since the connection was working at a reduced speed rather than being completely down, I investigated the physical layer before changing the LACP or trunk configuration.
+
+I inspected the Ethernet cable and discovered that one conductor was not properly seated inside the RJ45 connector.
 
 ### Root Cause
 
-An improperly seated conductor prevented the cable from providing all of the wire pairs required for Gigabit Ethernet operation.
+The Ethernet cable had been incorrectly terminated.
+
+One conductor was not making proper contact inside the RJ45 connector, preventing the cable from correctly supporting Gigabit Ethernet.
+
+The problem was therefore a Layer 1 cabling issue rather than an LACP or switch configuration problem.
 
 ### Resolution
 
-I corrected the RJ45 termination and retested the connection.
+I corrected the RJ45 termination and reconnected the cable.
 
-The link was then able to negotiate at the expected Gigabit speed.
+After fixing the termination, the interface negotiated at the expected Gigabit speed.
+
+I then verified the four-link EtherChannel using:
+
+`show etherchannel summary`
+
+The final EtherChannel showed:
+
+- `Po1(SU)` – Layer 2 Port-channel in use
+- All four physical interfaces in `(P)` state – successfully bundled into the Port-channel
 
 ### Lesson Learned
 
-A cable can appear functional while still having a physical defect.
+A physical Ethernet connection can appear functional while still having a cabling problem.
 
-A successful link does not necessarily mean the physical layer is completely healthy. Link speed, duplex, interface counters, and cable termination should also be checked.
+The fact that the interface was up did not mean Layer 1 was completely healthy. Checking negotiated speed helped identify that something was wrong with the physical connection.
 
+This reinforced a physical-first troubleshooting process:
+
+1. Check interface status.
+2. Check negotiated speed and duplex.
+3. Inspect and test the cable.
+4. Verify the RJ45 termination.
+5. Verify EtherChannel membership.
+6. Investigate LACP or trunk configuration only if the physical layer is healthy.
+
+The incident demonstrated how a Layer 1 problem can directly affect a Layer 2 technology such as EtherChannel.
 ---
 
 # Device Recovery & Initial Configuration
@@ -185,57 +212,6 @@ When completely resetting a switch, both the startup configuration and existing 
 ---
 
 # Network Configuration Troubleshooting
-
-## 7. LACP EtherChannel – Faulty Cable Termination
-
-### Problem
-
-While configuring the four-link LACP EtherChannel between SW1 and SW2, one of the physical links was not operating correctly.
-
-The EtherChannel uses four physical Gigabit Ethernet connections between the two switches.
-
-### Investigation
-
-Because the EtherChannel configuration was otherwise functioning, I investigated the physical links participating in the bundle.
-
-I checked the individual interfaces and inspected the Ethernet cabling.
-
-One of the Ethernet cables had been incorrectly terminated. A conductor inside the RJ45 connector was not properly seated, preventing that physical link from operating correctly.
-
-### Root Cause
-
-The problem was not an LACP or switch configuration mismatch.
-
-The root cause was a faulty RJ45 cable termination on one of the physical links participating in the EtherChannel.
-
-### Resolution
-
-I corrected the Ethernet cable termination and reconnected the link.
-
-I then verified the EtherChannel using:
-
-`show etherchannel summary`
-
-After correcting the cable, the EtherChannel showed:
-
-- `Po1(SU)` – Port-channel operating as a Layer 2 EtherChannel and in use
-- All four member interfaces in `(P)` state – successfully bundled in the Port-channel
-
-### Lesson Learned
-
-Not every EtherChannel problem is caused by switch configuration.
-
-Because EtherChannel depends on multiple physical links, Layer 1 problems can affect the bundle even when the LACP and trunk configuration is correct.
-
-This reinforced the importance of troubleshooting from the physical layer upward:
-
-1. Check interface/link status.
-2. Inspect and test physical cabling.
-3. Verify speed and duplex.
-4. Verify EtherChannel membership.
-5. Only then investigate LACP or trunk configuration if necessary.
-
-It also demonstrated why commands such as `show etherchannel summary` and interface status commands are useful for identifying whether individual physical links are successfully participating in the bundle.
 
 ---
 
