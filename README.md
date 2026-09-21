@@ -31,6 +31,8 @@ The goal of this project was to move beyond simulations and configure real Cisco
 
 ## Network Architecture
 
+![Cisco Home lab Diagram](Cisco-Homelab-diagram.png)
+
 The lab separates the home/ISP network from the private enterprise lab.
 
 R1 operates as the edge router and connects the lab to the upstream home network. It provides NAT overload, DHCP services, and advertises the default route into OSPF.
