@@ -31,7 +31,7 @@ The goal of this project was to move beyond simulations and configure real Cisco
 
 ## Network Architecture
 
-
+![Cisco Home lab Diagram](Cisco-homelab-diagram.png)
 
 The lab separates the home/ISP network from the private enterprise lab.
 
