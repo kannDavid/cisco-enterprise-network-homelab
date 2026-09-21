@@ -257,17 +257,23 @@ Because the route existed but the traffic was still being blocked, I inspected t
 
 ### Root Cause
 
-An ACL rule was preventing the expected ICMP traffic.
+### Root Cause
+
+A `deny ip any any` entry had accidentally been placed above the ACL entry intended to permit the traffic.
+
+Because Cisco ACLs are processed from top to bottom and stop at the first matching entry, the `deny ip any any` statement matched the ICMP traffic before the router could reach the permit statement.
 
 ### Resolution
 
-I reviewed and corrected the ACL behavior and then repeated the original connectivity test.
+I corrected the ACL entry order so that the required traffic was permitted before the deny statement.
+
+I then repeated the ICMP connectivity test and confirmed that the traffic was successfully permitted.
 
 ### Lesson Learned
 
-Routing determines where traffic should go, while ACLs determine whether that traffic is permitted.
+ACL entry order is critical because Cisco processes access control entries sequentially from top to bottom and stops at the first match.
 
-A valid route does not guarantee successful connectivity if a security policy blocks the traffic.
+A broad deny statement placed too early in an ACL can unintentionally block legitimate traffic, even when a permit statement exists later in the list.
 
 ---
 
