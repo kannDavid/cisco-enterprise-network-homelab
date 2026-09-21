@@ -10,6 +10,7 @@ The goal of this project is to move beyond simulations and gain hands-on experie
 
 ## 📚 Project Documentation
 
+- [Network Verification & Testing](documentation/verification.md)
 - [Troubleshooting & Deployment Challenges](documentation/troubleshooting.md)
 - [Future Homelab Implementations](documentation/future-implementations.md)
 
