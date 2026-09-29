@@ -27,6 +27,22 @@ The goal of this project is to move beyond simulations and gain hands-on experie
 - Physical Ethernet cabling and terminations
 - Client devices for connectivity testing
 
+### Virtualization Host
+
+| Device | Role | Specifications |
+|---|---|---|
+| HP ProDesk 600 G4 SFF | VMware ESXi Host | Intel Core i5-8500, 32 GB RAM |
+
+### Virtual Machines
+
+| Virtual Machine | Role | Network | IP Address |
+|---|---|---|---|
+| DC01 | Windows Server / Active Directory / DNS | VLAN 20 - Servers | 10.10.20.10 |
+| Linux File Server | Ubuntu Server / Samba / SSH | VLAN 20 - Servers | 10.10.20.20 |
+| Windows 11 Client | Domain-joined workstation | VLAN 10 - Users | DHCP |
+
+**ESXi Management:** `10.10.99.21` on **VLAN 99 - Management**
+
 ## Technologies & Protocols
 
 - IPv4 addressing and subnetting
