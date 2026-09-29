@@ -1,0 +1,332 @@
+# Remote Access with Tailscale
+
+## Overview
+
+Tailscale was added to the homelab to provide secure remote access to internal resources without exposing management interfaces or internal services directly to the public Internet.
+
+The Linux File Server acts as a **Tailscale subnet router**, allowing authorized remote devices to reach systems inside the server network.
+
+This provides remote access to internal resources such as:
+
+- DC01
+- Internal DNS
+- Linux services
+- Other systems on the advertised subnet
+
+---
+
+## Subnet Router Design
+
+The Linux File Server operates on:
+
+```text
+IP Address: 10.10.20.20
+VLAN: 20 - Servers
+```
+
+The server advertises the following internal subnet through Tailscale:
+
+```text
+10.10.20.0/24
+```
+
+This allows remote Tailscale-connected devices to reach systems on the server VLAN without installing Tailscale on every internal device.
+
+The traffic path is:
+
+```text
+Remote Device
+     |
+     v
+Tailscale Network
+     |
+     v
+Linux File Server
+10.10.20.20
+     |
+     v
+Subnet Route
+10.10.20.0/24
+     |
+     v
+Internal Server Network
+```
+
+---
+
+## Linux IP Forwarding
+
+Because the Linux server forwards traffic between Tailscale and the internal server network, IPv4 forwarding was enabled.
+
+The following command enabled forwarding:
+
+```bash
+sudo sysctl -w net.ipv4.ip_forward=1
+```
+
+To make the configuration persistent, the following setting was written to:
+
+```text
+/etc/sysctl.d/99-tailscale.conf
+```
+
+with:
+
+```text
+net.ipv4.ip_forward = 1
+```
+
+The configuration was then reloaded using:
+
+```bash
+sudo sysctl --system
+```
+
+### IP Forwarding Configuration
+
+![Tailscale IP Forwarding](../images/remote-access/tailscale-ip-forwarding.png)
+
+This allows the Linux server to forward packets between the Tailscale interface and the internal VLAN 20 network.
+
+---
+
+## Tailscale Subnet Route
+
+The Linux File Server was configured to advertise:
+
+```text
+10.10.20.0/24
+```
+
+as a Tailscale subnet route.
+
+### Subnet Route Configuration
+
+![Tailscale Subnet Route](../images/remote-access/tailscale-subnet-route.png)
+
+The screenshot shows the route after it was advertised and before administrative approval.
+
+Once the route was approved, remote Tailscale devices could use the Linux server as the path into the internal server network.
+
+This design avoids exposing systems such as DC01 or the ESXi management interface directly to the public Internet.
+
+---
+
+## Remote Connectivity Verification
+
+Remote access was tested from a Windows system connected through Tailscale.
+
+The remote system successfully reached DC01:
+
+```text
+10.10.20.10
+```
+
+using ICMP.
+
+Example:
+
+```text
+ping 10.10.20.10
+```
+
+The test returned replies with no packet loss.
+
+### Remote DC01 Connectivity
+
+![Tailscale DC01 Remote Verification](../images/remote-access/tailscale-dc01-remote-verification.png)
+
+This confirms that traffic from the remote device can reach the internal server network through the Tailscale subnet router.
+
+---
+
+## Remote DNS Testing
+
+The same remote system was also used to test internal DNS resolution.
+
+The remote computer was using the public DNS server:
+
+```text
+8.8.8.8
+```
+
+When querying:
+
+```text
+ad.homelab.com
+```
+
+through public DNS, the lookup failed.
+
+This is expected because `ad.homelab.com` is an internal DNS zone hosted by DC01 and is not available through public DNS.
+
+The internal DNS server was then queried directly:
+
+```text
+nslookup ad.homelab.com 10.10.20.10
+```
+
+The query successfully returned:
+
+```text
+Name:    ad.homelab.com
+Address: 10.10.20.10
+```
+
+This demonstrates the difference between:
+
+- Public DNS resolution
+- Private/internal DNS resolution
+- Network reachability
+- DNS server selection
+
+---
+
+## Why the First DNS Query Failed
+
+The failed lookup did not indicate a network connectivity problem.
+
+The remote system could already reach DC01 by IP address, which confirmed that the Tailscale route was working.
+
+The issue was DNS selection.
+
+The normal lookup path was:
+
+```text
+Remote Windows PC
+      |
+      v
+DNS Server 8.8.8.8
+      |
+      v
+Public DNS
+      |
+      v
+ad.homelab.com not found
+```
+
+The successful lookup path was:
+
+```text
+Remote Windows PC
+      |
+      v
+Tailscale
+      |
+      v
+Linux Subnet Router
+      |
+      v
+DC01 DNS
+10.10.20.10
+      |
+      v
+ad.homelab.com
+```
+
+This was useful for separating a **routing problem** from a **DNS configuration problem**.
+
+---
+
+## Security Considerations
+
+The remote access design avoids directly exposing internal services to the public Internet.
+
+The following systems remain on private internal addressing:
+
+```text
+ESXi Management: 10.10.99.21
+DC01:             10.10.20.10
+Linux Server:     10.10.20.20
+```
+
+Remote access is provided through the Tailscale overlay network instead of configuring public port forwarding for services such as:
+
+- ESXi management
+- SSH
+- SMB
+- Active Directory
+- DNS
+
+This reduces the need to expose management services directly to the Internet.
+
+---
+
+## Network Integration
+
+The Tailscale subnet router is part of the existing physical and virtual network.
+
+```text
+Remote Device
+     |
+     v
+Tailscale
+     |
+     v
+Linux File Server
+10.10.20.20
+     |
+     v
+Servers-VLAN20
+     |
+     v
+VMware ESXi
+     |
+     v
+SW2 Gi1/0/13
+     |
+     v
+Cisco Network
+     |
+     v
+Internal Resources
+```
+
+The Linux server therefore acts as the bridge between the remote Tailscale network and the internal server VLAN.
+
+---
+
+## Validation
+
+The remote access implementation was validated through:
+
+- Tailscale installation
+- Linux IPv4 forwarding
+- Persistent `sysctl` configuration
+- Subnet route advertisement
+- Subnet route approval
+- Remote connectivity to `10.10.20.10`
+- Successful ICMP testing
+- Internal DNS resolution through DC01
+- Separation of public and private DNS behavior
+
+---
+
+## Skills Practiced
+
+This portion of the project provided hands-on experience with:
+
+- Secure remote access
+- Tailscale
+- Overlay networking
+- Subnet routing
+- Linux IP forwarding
+- Linux `sysctl`
+- Remote network troubleshooting
+- Private DNS
+- Public vs internal DNS resolution
+- Routing verification
+- Secure access to internal infrastructure
+- Diagnosing DNS vs connectivity issues
+
+---
+
+## Key Takeaway
+
+Tailscale extended remote access into the homelab without requiring internal services to be exposed directly to the Internet.
+
+Using the Linux File Server as a subnet router allowed remote systems to reach internal resources on `10.10.20.0/24` while keeping the existing Cisco VLAN and routing design intact.
+
+The DNS testing also demonstrated an important troubleshooting concept: successful IP connectivity does not automatically mean DNS is configured correctly.
+
+This setup provides a practical example of securely accessing private infrastructure while preserving internal network segmentation.
