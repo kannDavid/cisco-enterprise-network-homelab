@@ -64,6 +64,53 @@ Examples:
 - Inter-VLAN communication is routed through R2/R3 using Router-on-a-Stick and HSRP.
 - The ESXi management interface remains isolated on VLAN 99.
 
+### Windows Server & Active Directory
+
+A Windows Server virtual machine named **DC01** provides centralized identity and DNS services for the lab.
+
+**DC01 Configuration**
+- Hostname: `DC01`
+- IP Address: `10.10.20.10`
+- Network: VLAN 20 - Servers
+- Domain: `ad.homelab.com`
+- Roles: Active Directory Domain Services (AD DS) and DNS
+
+The Active Directory environment was configured to simulate centralized user and computer management in an enterprise network.
+
+#### Active Directory Structure
+
+Organizational Units (OUs) were created to organize users by department:
+
+- `Lab-Users`
+  - `Finance`
+  - `HR`
+  - `IT`
+- `Lab-Groups`
+- `Lab-Computers`
+
+Security groups were created for departmental access control:
+
+- `GG-Finance`
+- `GG-HR`
+- `GG-IT`
+
+### Group Policy
+
+A Group Policy Object named **HR-Desktop Policy** was created and linked to the HR OU.
+
+The policy includes:
+
+- Restricting access to Control Panel and PC Settings
+- Configuring screen saver settings
+- Password-protecting the screen saver
+- Automatically mapping the HR shared drive as `H:`
+
+### Domain Client
+
+A Windows 11 Pro virtual machine on **VLAN 10 - Users** was joined to the `ad.homelab.com` domain.
+
+This validates communication between the user and server VLANs and allows domain users to authenticate against DC01 and receive Group Policy settings.
+
 ## Technologies & Protocols
 
 - IPv4 addressing and subnetting
