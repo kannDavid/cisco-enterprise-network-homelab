@@ -16,7 +16,7 @@ The goal of this project is to move beyond simulations and gain hands-on experie
 
 ## 🔧 Core Technologies
 
-`Cisco IOS` `VLANs` `802.1Q` `OSPF` `HSRP` `LACP` `EtherChannel` `DHCP` `NAT/PAT` `ACLs` `SSH` `STP`
+`Cisco IOS` `VLANs` `802.1Q` `OSPF` `HSRP` `LACP` `EtherChannel` `DHCP` `NAT/PAT` `ACLs` `SSH` `STP` `VMware ESXi` `Windows Server` `Active Directory` `DNS` `Group Policy` `Ubuntu Server` `Samba`
 
 ---
 
