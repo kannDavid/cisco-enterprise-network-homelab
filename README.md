@@ -41,7 +41,28 @@ The goal of this project is to move beyond simulations and gain hands-on experie
 | Linux File Server | Ubuntu Server / Samba / SSH | VLAN 20 - Servers | 10.10.20.20 |
 | Windows 11 Client | Domain-joined workstation | VLAN 10 - Users | DHCP |
 
-**ESXi Management:** `10.10.99.21` on **VLAN 99 - Management**
+**The ESXi management interface is placed on the dedicated Management VLAN 99**
+
+### ESXi Network Integration
+
+The VMware ESXi host is physically connected to **SW2 interface Gi1/0/13**, integrating the virtual environment with the physical Cisco network.
+
+The ESXi virtual networking is segmented using the same VLAN architecture as the physical network:
+
+| ESXi Network | VLAN | Purpose |
+|---|---:|---|
+| Management Network | 99 | ESXi host management (`10.10.99.21`) |
+| Servers-VLAN20 | 20 | Server virtual machines |
+| Users-VLAN10 | 10 | Client virtual machines |
+
+This allows virtual machines running inside ESXi to communicate with the physical network while maintaining VLAN segmentation.
+
+Examples:
+
+- **DC01 (`10.10.20.10`)** and the **Linux File Server (`10.10.20.20`)** operate on VLAN 20.
+- The **Windows 11 client** operates on VLAN 10 and receives its IP configuration through DHCP.
+- Inter-VLAN communication is routed through R2/R3 using Router-on-a-Stick and HSRP.
+- The ESXi management interface remains isolated on VLAN 99.
 
 ## Technologies & Protocols
 
