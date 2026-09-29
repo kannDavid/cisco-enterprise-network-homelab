@@ -1,8 +1,8 @@
 # Cisco Enterprise Network Homelab
 
-A hands-on physical Cisco networking lab designed to simulate a small enterprise network using routing, switching, redundancy, segmentation, network services, security, and troubleshooting.
+A hands-on enterprise-style homelab combining **physical Cisco networking, VMware virtualization, Windows Server infrastructure, and Linux services**.
 
-The goal of this project is to move beyond simulations and gain hands-on experience configuring, testing, and troubleshooting physical Cisco infrastructure.
+The project was built to gain practical experience designing, configuring, testing, and troubleshooting an environment that integrates physical network infrastructure with virtualized servers and clients.
 
 ## 🏗️ Network Topology
 
@@ -10,6 +10,10 @@ The goal of this project is to move beyond simulations and gain hands-on experie
 
 ## 📚 Project Documentation
 
+- [VMware ESXi & Virtualization](documentation/vmware-esxi.md)
+- [Active Directory & Windows Server](documentation/active-directory.md)
+- [Linux File Server](documentation/linux-file-server.md)
+- [Remote Access](documentation/remote-access.md)
 - [Network Verification & Testing](documentation/verification.md)
 - [Troubleshooting & Deployment Challenges](documentation/troubleshooting.md)
 - [Future Homelab Implementations](documentation/future-implementations.md)
@@ -20,137 +24,63 @@ The goal of this project is to move beyond simulations and gain hands-on experie
 
 ---
 
-## Physical Hardware
+## 🖥️ Virtualization & Server Infrastructure
 
-- 3 Cisco routers: R1, R2, R3
-- 2 Cisco switches: SW1, SW2
-- Physical Ethernet cabling and terminations
-- Client devices for connectivity testing
+The physical Cisco network is integrated with a **VMware ESXi** virtualization host connected to **SW2 Gi1/0/13**.
 
-### Virtualization Host
+The ESXi environment extends the physical VLAN architecture into the virtual infrastructure, allowing virtual servers and clients to operate on the same segmented enterprise network.
 
-| Device | Role | Specifications |
-|---|---|---|
-| HP ProDesk 600 G4 SFF | VMware ESXi Host | Intel Core i5-8500, 32 GB RAM |
-
-### Virtual Machines
-
-| Virtual Machine | Role | Network | IP Address |
+| System | Role | Network | IP Address |
 |---|---|---|---|
-| DC01 | Windows Server / Active Directory / DNS | VLAN 20 - Servers | 10.10.20.10 |
-| Linux File Server | Ubuntu Server / Samba / SSH | VLAN 20 - Servers | 10.10.20.20 |
+| VMware ESXi Host | Virtualization platform | VLAN 99 - Management | `10.10.99.21` |
+| DC01 | Active Directory / DNS | VLAN 20 - Servers | `10.10.20.10` |
+| Linux File Server | Samba / SSH | VLAN 20 - Servers | `10.10.20.20` |
 | Windows 11 Client | Domain-joined workstation | VLAN 10 - Users | DHCP |
 
-**The ESXi management interface is placed on the dedicated Management VLAN 99**
+The ESXi host provides separate virtual networks for:
 
-### ESXi Network Integration
+- **Management Network** → VLAN 99
+- **Servers-VLAN20** → VLAN 20
+- **Users-VLAN10** → VLAN 10
 
-The VMware ESXi host is physically connected to **SW2 interface Gi1/0/13**, integrating the virtual environment with the physical Cisco network.
+Implemented server and virtualization services include:
 
-The ESXi virtual networking is segmented using the same VLAN architecture as the physical network:
+- VMware ESXi virtualization
+- Windows Server
+- Active Directory Domain Services
+- DNS
+- Group Policy
+- Domain authentication
+- Ubuntu Server
+- Samba file sharing
+- SSH administration
 
-| ESXi Network | VLAN | Purpose |
-|---|---:|---|
-| Management Network | 99 | ESXi host management (`10.10.99.21`) |
-| Servers-VLAN20 | 20 | Server virtual machines |
-| Users-VLAN10 | 10 | Client virtual machines |
+---
 
-This allows virtual machines running inside ESXi to communicate with the physical network while maintaining VLAN segmentation.
+## 🌐 Network Architecture
 
-Examples:
+The lab separates the home/upstream network from the internal enterprise environment.
 
-- **DC01 (`10.10.20.10`)** and the **Linux File Server (`10.10.20.20`)** operate on VLAN 20.
-- The **Windows 11 client** operates on VLAN 10 and receives its IP configuration through DHCP.
-- Inter-VLAN communication is routed through R2/R3 using Router-on-a-Stick and HSRP.
-- The ESXi management interface remains isolated on VLAN 99.
+**R1** operates as the edge router and connects the lab to the upstream home network. It provides NAT overload, DHCP services, and advertises the default route into OSPF.
 
-### Windows Server & Active Directory
+**R2 and R3** provide redundant inter-VLAN routing using Router-on-a-Stick and HSRP.
 
-A Windows Server virtual machine named **DC01** provides centralized identity and DNS services for the lab.
-
-**DC01 Configuration**
-- Hostname: `DC01`
-- IP Address: `10.10.20.10`
-- Network: VLAN 20 - Servers
-- Domain: `ad.homelab.com`
-- Roles: Active Directory Domain Services (AD DS) and DNS
-
-The Active Directory environment was configured to simulate centralized user and computer management in an enterprise network.
-
-#### Active Directory Structure
-
-Organizational Units (OUs) were created to organize users by department:
-
-- `Lab-Users`
-  - `Finance`
-  - `HR`
-  - `IT`
-- `Lab-Groups`
-- `Lab-Computers`
-
-Security groups were created for departmental access control:
-
-- `GG-Finance`
-- `GG-HR`
-- `GG-IT`
-
-### Group Policy
-
-A Group Policy Object named **HR-Desktop Policy** was created and linked to the HR OU.
-
-The policy includes:
-
-- Restricting access to Control Panel and PC Settings
-- Configuring screen saver settings
-- Password-protecting the screen saver
-- Automatically mapping the HR shared drive as `H:`
-
-### Domain Client
-
-A Windows 11 Pro virtual machine on **VLAN 10 - Users** was joined to the `ad.homelab.com` domain.
-
-This validates communication between the user and server VLANs and allows domain users to authenticate against DC01 and receive Group Policy settings.
-
-## Technologies & Protocols
-
-- IPv4 addressing and subnetting
-- VLAN segmentation
-- IEEE 802.1Q trunking
-- Router-on-a-Stick
-- OSPF
-- HSRP
-- LACP EtherChannel
-- DHCP
-- DHCP Relay
-- NAT/PAT
-- SSH
-- Spanning Tree Protocol
-- PortFast
-- BPDU Guard
-- Network Security / ACLs
-
-## Network Architecture
-
-The lab separates the home/ISP network from the private enterprise lab.
-
-R1 operates as the edge router and connects the lab to the upstream home network. It provides NAT overload, DHCP services, and advertises the default route into OSPF.
-
-R2 and R3 provide redundant inter-VLAN routing using router-on-a-stick and HSRP.
-
-SW1 operates as the distribution switch while SW2 provides access-layer connectivity.
+**SW1** operates as the distribution switch while **SW2** provides access-layer connectivity and connectivity to the VMware ESXi environment.
 
 ### Network Segments
 
 | Network | VLAN | Purpose | Gateway |
 |---|---:|---|---|
-| 10.0.0.0/24 | — | Home / upstream network | 10.0.0.1 |
-| 10.10.1.0/24 | 50 | Router transit / OSPF | R1 `.1`, R2 `.2`, R3 `.3` |
-| 10.10.10.0/24 | 10 | Users | HSRP VIP `10.10.10.1` |
-| 10.10.20.0/24 | 20 | Servers | HSRP VIP `10.10.20.1` |
-| 10.10.99.0/24 | 99 | Network management | HSRP VIP `10.10.99.1` |
+| `10.0.0.0/24` | — | Home / upstream network | `10.0.0.1` |
+| `10.10.1.0/24` | 50 | Router transit / OSPF | R1 `.1`, R2 `.2`, R3 `.3` |
+| `10.10.10.0/24` | 10 | Users | HSRP VIP `10.10.10.1` |
+| `10.10.20.0/24` | 20 | Servers | HSRP VIP `10.10.20.1` |
+| `10.10.99.0/24` | 99 | Network management | HSRP VIP `10.10.99.1` |
 | — | 1000 | Native / unused trunk VLAN | — |
 
-## Routing – OSPF
+---
+
+## 🔀 Routing – OSPF
 
 OSPF provides dynamic routing between R1, R2, and R3.
 
@@ -164,7 +94,9 @@ The routers form OSPF adjacencies across VLAN 50 (`10.10.1.0/24`).
 
 R1 provides the lab's default route toward the upstream home router and originates the default route into OSPF.
 
-## First-Hop Redundancy – HSRP
+---
+
+## ♻️ First-Hop Redundancy – HSRP
 
 R2 and R3 provide redundant default gateways for the internal VLANs.
 
@@ -176,11 +108,13 @@ R2 operates as the active HSRP router while R3 operates as standby.
 - VLAN 20 → `10.10.20.1`
 - VLAN 99 → `10.10.99.1`
 
-If the active gateway becomes unavailable, HSRP allows the standby router to provide gateway redundancy.
+If the active gateway becomes unavailable, HSRP allows the standby router to assume the gateway role.
 
-## Switching & EtherChannel
+---
 
-SW1 and SW2 are connected using a four-link LACP EtherChannel.
+## 🔗 Switching & EtherChannel
+
+SW1 and SW2 are connected using a four-link **LACP EtherChannel**.
 
 Member interfaces:
 
@@ -198,7 +132,9 @@ The resulting `Port-channel1` operates as an 802.1Q trunk carrying:
 
 VLAN 1000 is configured as the native VLAN.
 
-## DHCP
+---
+
+## 📡 DHCP
 
 R1 provides DHCP services for the internal VLANs.
 
@@ -210,15 +146,21 @@ DHCP pools exist for:
 
 R2 and R3 use `ip helper-address` to relay DHCP requests from the client VLANs to R1.
 
-## Internet Connectivity & NAT
+The Windows 11 domain client on VLAN 10 receives its network configuration through this DHCP infrastructure.
+
+---
+
+## 🌍 Internet Connectivity & NAT
 
 R1 acts as the network edge.
 
-The internal `10.10.0.0/16` network is translated using NAT overload/PAT through R1's upstream interface.
+The internal `10.10.0.0/16` network is translated using **NAT overload/PAT** through R1's upstream interface.
 
-This allows multiple internal devices to share the upstream address when accessing external networks.
+This allows multiple internal devices and virtual machines to share the upstream address when accessing external networks.
 
-## Network Security & Management
+---
+
+## 🔐 Network Security & Management
 
 The lab includes several network hardening and management features:
 
@@ -226,14 +168,70 @@ The lab includes several network hardening and management features:
 - Local authentication
 - PortFast on appropriate access ports
 - BPDU Guard
+- Root Guard
+- Loop Guard
 - Dedicated management VLAN
 - Non-user native VLAN
 - Passive OSPF interfaces
-- Network segmentation using VLANs
+- VLAN-based network segmentation
+- DHCP snooping
+- Access control using ACLs
 
-## Verification
+---
 
-The environment was validated using Cisco IOS commands including:
+## 🪟 Windows Server & Active Directory
+
+A Windows Server virtual machine named **DC01** provides centralized identity and DNS services.
+
+- Hostname: `DC01`
+- IP: `10.10.20.10`
+- VLAN: 20 - Servers
+- Domain: `ad.homelab.com`
+- Roles: Active Directory Domain Services and DNS
+
+The environment includes departmental Organizational Units, security groups, domain users, Group Policy, and a Windows 11 domain client.
+
+A Group Policy Object is used to apply settings to HR users, including workstation restrictions and automatic mapping of the HR network share.
+
+📄 [View Active Directory & Windows Server Documentation](documentation/active-directory.md)
+
+---
+
+## 🐧 Linux File Server
+
+An Ubuntu Server VM operates on the server network at:
+
+`10.10.20.20`
+
+The Linux server provides:
+
+- SSH remote administration
+- Samba file sharing
+- Linux user/group permissions
+- Shared storage accessible from Windows clients
+- Integration with the existing VLAN and DNS infrastructure
+
+A Samba share named **CompanyShare** was configured and tested from Windows.
+
+📄 [View Linux File Server Documentation](documentation/linux-file-server.md)
+
+---
+
+## 🔒 Remote Lab Access
+
+Secure remote connectivity was implemented using **Tailscale**.
+
+The Linux server can provide access to the internal server subnet without exposing ESXi, SSH, or other management services directly to the public Internet.
+
+This allows remote connectivity to internal lab resources while maintaining the existing private addressing scheme.
+
+📄 [View Remote Access Documentation](documentation/remote-access.md)
+
+---
+
+## 🧪 Verification
+
+The Cisco network was validated using IOS commands including:
 
 ```text
 show ip interface brief
@@ -246,3 +244,87 @@ show vlan brief
 show interfaces trunk
 show etherchannel summary
 show spanning-tree
+```
+
+Additional end-to-end testing included:
+
+- DHCP address assignment
+- Inter-VLAN connectivity
+- Internet connectivity through NAT/PAT
+- OSPF neighbor formation
+- HSRP gateway redundancy
+- LACP EtherChannel operation
+- ESXi management connectivity
+- Virtual machine VLAN connectivity
+- DNS resolution
+- Active Directory domain authentication
+- Group Policy application
+- Windows-to-Linux Samba file sharing
+- SSH connectivity
+
+📄 [View Network Verification & Testing](documentation/verification.md)
+
+---
+
+## 🛠️ Troubleshooting Experience
+
+Building the environment required troubleshooting real configuration and Layer 1 issues.
+
+Examples include:
+
+- Incorrect DNS configuration in a DHCP pool
+- EtherChannel connectivity issues caused by cable termination
+- Ethernet link negotiating at 100 Mbps due to cabling
+- ACL placement blocking ICMP/DNS testing
+- SSH compatibility issues between modern OpenSSH clients and older Cisco IOS devices
+- Virtual machine storage allocation and thin provisioning
+- DNS configuration for Active Directory clients
+- VLAN connectivity between physical and virtual infrastructure
+
+These issues were documented along with their symptoms, troubleshooting process, root cause, and resolution.
+
+📄 [View Troubleshooting & Deployment Challenges](documentation/troubleshooting.md)
+
+---
+
+## 🎯 Skills Practiced
+
+This project provided hands-on experience with:
+
+- Enterprise network design
+- Cisco router and switch configuration
+- VLAN segmentation
+- Dynamic routing
+- Gateway redundancy
+- Link aggregation
+- DHCP and DHCP relay
+- NAT/PAT
+- Network security
+- Layer 1 troubleshooting
+- VMware ESXi virtualization
+- Virtual networking
+- Windows Server administration
+- Active Directory
+- DNS
+- Group Policy
+- Linux administration
+- Samba file sharing
+- SSH
+- Cross-platform troubleshooting
+- Network and server integration
+
+---
+
+## 🚀 Future Improvements
+
+Future additions to the homelab may include:
+
+- Expanded VMware virtualization
+- Additional Windows and Linux servers
+- Centralized monitoring and logging
+- Backup and recovery testing
+- Additional network security controls
+- Expanded remote administration
+- Infrastructure automation
+
+📄 [View Future Homelab Implementations](documentation/future-implementations.md)
