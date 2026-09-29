@@ -13,9 +13,9 @@ The project was built to gain practical experience designing, configuring, testi
 - [VMware ESXi & Virtualization](documentation/vmware-esxi.md)
 - [Active Directory & Windows Server](documentation/active-directory.md)
 - [Linux File Server](documentation/linux-file-server.md)
-- [Remote Access](documentation/remote-access.md)
+- [Remote Access](documentation/tailscale)
 - [Network Verification & Testing](documentation/verification.md)
-- [Troubleshooting & Deployment Challenges](documentation/troubleshooting.md)
+- [Troubleshooting & Deployment Challenges](documentation/Cisco-troubleshooting.md)
 - [Future Homelab Implementations](documentation/future-implementations.md)
 
 ## 🔧 Core Technologies
