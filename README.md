@@ -8,6 +8,20 @@ The project was built to gain practical experience designing, configuring, testi
 
 ![Cisco Enterprise Homelab Topology](images/Cisco-homelab-diagram.png)
 
+## 🧰 Physical Homelab
+
+The environment is built using real Cisco routing and switching hardware integrated with a physical VMware ESXi host.
+
+The rack includes three Cisco routers, two Cisco switches, structured Ethernet cabling, and the ESXi virtualization host used to run the Windows and Linux server environment.
+
+Yes cable managment needs some work and I plan to get some RJ45 keystones.
+
+<p align="center">
+  <img src="images/physical-lab/physical-homelab-front.jpeg" width="32%">
+  <img src="images/physical-lab/physical-homelab-rear.jpeg" width="32%">
+  <img src="images/physical-lab/physical-homelab-wider.jpeg" width="32%">
+</p>
+
 ## 📚 Project Documentation
 
 - [VMware ESXi & Virtualization](documentation/vmware-esxi.md)
