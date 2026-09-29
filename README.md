@@ -6,7 +6,7 @@ The project was built to gain practical experience designing, configuring, testi
 
 ## 🏗️ Network Topology
 
-![Cisco Enterprise Homelab Topology](Cisco-homelab-diagram.png)
+![Cisco Enterprise Homelab Topology](images/Cisco-homelab-diagram.png)
 
 ## 📚 Project Documentation
 
